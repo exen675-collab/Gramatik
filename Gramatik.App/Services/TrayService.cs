@@ -1,4 +1,6 @@
 using System.Drawing;
+using System.IO;
+using System.Reflection;
 using System.Windows.Forms;
 
 namespace Gramatik.App.Services;
@@ -32,7 +34,7 @@ public sealed class TrayService : IDisposable
 
         _notifyIcon = new NotifyIcon
         {
-            Icon = SystemIcons.Application,
+            Icon = LoadApplicationIcon(),
             Text = "Gramatik - Ready",
             ContextMenuStrip = menu,
             Visible = true
@@ -65,5 +67,16 @@ public sealed class TrayService : IDisposable
         _notifyIcon.Visible = false;
         _notifyIcon.Dispose();
         _disposed = true;
+    }
+
+    private static Icon LoadApplicationIcon()
+    {
+        var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "gramatik.ico");
+        if (File.Exists(iconPath))
+        {
+            return new Icon(iconPath);
+        }
+
+        return Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location) ?? SystemIcons.Application;
     }
 }
