@@ -2,6 +2,32 @@
 
 Gramatik is a Windows tray app that corrects selected text through OpenRouter. It can either preserve the detected source language or correct and translate the selection into English.
 
+## Quick Install
+
+Requirements:
+
+- Windows
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- Git
+
+Clone, compile, test, and run:
+
+```powershell
+git clone https://github.com/exen675-collab/Gramatik.git
+cd Gramatik
+dotnet restore .\Gramatik.sln
+dotnet build .\Gramatik.sln -c Release
+dotnet test .\Gramatik.sln -c Release --no-build
+dotnet run --project .\Gramatik.App\Gramatik.App.csproj -c Release
+```
+
+Optional publish command for a standalone Windows x64 build:
+
+```powershell
+dotnet publish .\Gramatik.App\Gramatik.App.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o .\publish\win-x64
+.\publish\win-x64\Gramatik.App.exe
+```
+
 ## Run
 
 ```powershell
