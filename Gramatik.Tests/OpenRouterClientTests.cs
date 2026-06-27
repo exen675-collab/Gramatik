@@ -9,10 +9,11 @@ public sealed class OpenRouterClientTests
     [Fact]
     public void CreateChatRequest_UsesCorrectOnlyPrompt()
     {
-        var request = OpenRouterClient.CreateChatRequest("test/model", CorrectionMode.Correct, "ala ma kota");
+        var request = OpenRouterClient.CreateChatRequest("test/model", CorrectionMode.Correct, "ala ma kota", 0.5);
         var json = JsonSerializer.Serialize(request);
 
         Assert.Contains("test/model", json);
+        Assert.Contains("\"temperature\":0.5", json);
         Assert.Contains("\"sort\":\"latency\"", json);
         Assert.Contains("\"effort\":\"none\"", json);
         Assert.Contains("\"exclude\":true", json);
@@ -24,11 +25,21 @@ public sealed class OpenRouterClientTests
     [Fact]
     public void CreateChatRequest_UsesTranslatePrompt()
     {
-        var request = OpenRouterClient.CreateChatRequest("test/model", CorrectionMode.CorrectAndTranslateToEnglish, "ala ma kota");
+        var request = OpenRouterClient.CreateChatRequest("test/model", CorrectionMode.CorrectAndTranslateToEnglish, "ala ma kota", 0.8);
         var json = JsonSerializer.Serialize(request);
 
+        Assert.Contains("\"temperature\":0.8", json);
         Assert.Contains("translate the result into natural English", json);
         Assert.Contains("ala ma kota", json);
+    }
+
+    [Fact]
+    public void CreateChatRequest_ClampsTemperature()
+    {
+        var request = OpenRouterClient.CreateChatRequest("test/model", CorrectionMode.Correct, "text", 3);
+        var json = JsonSerializer.Serialize(request);
+
+        Assert.Contains("\"temperature\":2", json);
     }
 
     [Fact]

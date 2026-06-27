@@ -62,6 +62,7 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
                 <TextBlock Grid.Row="0"
@@ -94,10 +95,34 @@
 
                 <TextBlock Grid.Row="2"
                            Grid.Column="0"
-                           Text="Correct"
+                           Text="Temperature"
                            VerticalAlignment="Center"
                            Margin="0,0,16,14" />
                 <Grid Grid.Row="2" Grid.Column="1" Margin="0,0,0,14">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="72" />
+                    </Grid.ColumnDefinitions>
+                    <Slider x:Name="TemperatureSlider"
+                            Grid.Column="0"
+                            Minimum="0"
+                            Maximum="2"
+                            TickFrequency="0.1"
+                            IsSnapToTickEnabled="False"
+                            VerticalAlignment="Center"
+                            ValueChanged="TemperatureSlider_ValueChanged" />
+                    <TextBox x:Name="TemperatureTextBox"
+                             Grid.Column="1"
+                             Margin="10,0,0,0"
+                             TextChanged="TemperatureTextBox_TextChanged" />
+                </Grid>
+
+                <TextBlock Grid.Row="3"
+                           Grid.Column="0"
+                           Text="Correct"
+                           VerticalAlignment="Center"
+                           Margin="0,0,16,14" />
+                <Grid Grid.Row="3" Grid.Column="1" Margin="0,0,0,14">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
@@ -111,12 +136,12 @@
                             Click="RecordCorrect_Click" />
                 </Grid>
 
-                <TextBlock Grid.Row="3"
+                <TextBlock Grid.Row="4"
                            Grid.Column="0"
                            Text="Correct + English"
                            VerticalAlignment="Center"
                            Margin="0,0,16,14" />
-                <Grid Grid.Row="3" Grid.Column="1" Margin="0,0,0,14">
+                <Grid Grid.Row="4" Grid.Column="1" Margin="0,0,0,14">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
@@ -130,30 +155,30 @@
                             Click="RecordTranslate_Click" />
                 </Grid>
 
-                <TextBlock Grid.Row="4"
+                <TextBlock Grid.Row="5"
                            Grid.Column="0"
                            Text="Startup"
                            VerticalAlignment="Center"
                            Margin="0,0,16,14" />
                 <CheckBox x:Name="StartWithWindowsCheckBox"
-                          Grid.Row="4"
+                          Grid.Row="5"
                           Grid.Column="1"
                           Content="Start with Windows"
                           VerticalAlignment="Center"
                           Margin="0,0,0,14" />
 
-                <TextBlock Grid.Row="5"
+                <TextBlock Grid.Row="6"
                            Grid.Column="1"
                            TextWrapping="Wrap"
                            Foreground="#5B6470"
                            Text="Recording accepts keyboard shortcuts and mouse Middle/XButton1/XButton2. Press Esc while recording to cancel." />
 
-                <TextBlock Grid.Row="6"
+                <TextBlock Grid.Row="7"
                            Grid.Column="0"
                            Text="Logs"
                            VerticalAlignment="Top"
                            Margin="0,22,16,0" />
-                <Grid Grid.Row="6" Grid.Column="1" Margin="0,22,0,0">
+                <Grid Grid.Row="7" Grid.Column="1" Margin="0,22,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="220" />

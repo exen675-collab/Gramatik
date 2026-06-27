@@ -53,6 +53,7 @@ public sealed class SettingsService
             {
                 ApiKey = UnprotectOrEmpty(stored.EncryptedApiKey),
                 SelectedModelId = stored.SelectedModelId,
+                Temperature = NormalizeTemperature(stored.Temperature),
                 CorrectHotkey = stored.CorrectHotkey,
                 CorrectAndTranslateHotkey = stored.CorrectAndTranslateHotkey,
                 StartWithWindows = stored.StartWithWindows,
@@ -61,7 +62,7 @@ public sealed class SettingsService
 
             _logger?.Info(
                 "SettingsLoaded",
-                $"path={SettingsPath}; hasApiKey={!string.IsNullOrWhiteSpace(Current.ApiKey)}; model={Current.SelectedModelId ?? "<none>"}; models={Current.CachedModels.Count}; correctHotkey={Current.CorrectHotkey.ToDisplayString()}; translateHotkey={Current.CorrectAndTranslateHotkey.ToDisplayString()}; startup={Current.StartWithWindows}");
+                $"path={SettingsPath}; hasApiKey={!string.IsNullOrWhiteSpace(Current.ApiKey)}; model={Current.SelectedModelId ?? "<none>"}; temperature={Current.Temperature:0.##}; models={Current.CachedModels.Count}; correctHotkey={Current.CorrectHotkey.ToDisplayString()}; translateHotkey={Current.CorrectAndTranslateHotkey.ToDisplayString()}; startup={Current.StartWithWindows}");
         }
         catch (Exception ex)
         {
@@ -80,7 +81,7 @@ public sealed class SettingsService
         Current = settings;
         _logger?.Info(
             "SettingsSaved",
-            $"path={SettingsPath}; hasApiKey={!string.IsNullOrWhiteSpace(settings.ApiKey)}; model={settings.SelectedModelId ?? "<none>"}; models={settings.CachedModels.Count}; correctHotkey={settings.CorrectHotkey.ToDisplayString()}; translateHotkey={settings.CorrectAndTranslateHotkey.ToDisplayString()}; startup={settings.StartWithWindows}");
+            $"path={SettingsPath}; hasApiKey={!string.IsNullOrWhiteSpace(settings.ApiKey)}; model={settings.SelectedModelId ?? "<none>"}; temperature={settings.Temperature:0.##}; models={settings.CachedModels.Count}; correctHotkey={settings.CorrectHotkey.ToDisplayString()}; translateHotkey={settings.CorrectAndTranslateHotkey.ToDisplayString()}; startup={settings.StartWithWindows}");
     }
 
     public static string? Validate(RuntimeSettings settings)
@@ -100,7 +101,22 @@ public sealed class SettingsService
             return "Both actions cannot use the same hotkey.";
         }
 
+        if (settings.Temperature is < 0 or > 2 || double.IsNaN(settings.Temperature))
+        {
+            return "Temperature must be between 0.0 and 2.0.";
+        }
+
         return null;
+    }
+
+    private static double NormalizeTemperature(double value)
+    {
+        if (value is < 0 or > 2 || double.IsNaN(value))
+        {
+            return 0.5;
+        }
+
+        return value;
     }
 
     private string UnprotectOrEmpty(string? encrypted)

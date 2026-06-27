@@ -15,6 +15,7 @@ public partial class SettingsWindow : Window
     private readonly Action<string> _statusSink;
     private RuntimeSettings _workingSettings = new();
     private CaptureTarget? _captureTarget;
+    private bool _isUpdatingTemperature;
 
     public SettingsWindow(
         SettingsService settingsService,
@@ -43,6 +44,7 @@ public partial class SettingsWindow : Window
     {
         _workingSettings = Clone(settings);
         ApiKeyBox.Password = _workingSettings.ApiKey;
+        SetTemperatureControls(_workingSettings.Temperature);
         StartWithWindowsCheckBox.IsChecked = _workingSettings.StartWithWindows;
         RefreshModelList();
         RefreshHotkeyText();
@@ -128,11 +130,35 @@ public partial class SettingsWindow : Window
         SetStatus("Logs cleared.");
     }
 
+    private void TemperatureSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (_isUpdatingTemperature)
+        {
+            return;
+        }
+
+        SetTemperatureControls(e.NewValue);
+    }
+
+    private void TemperatureTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+    {
+        if (_isUpdatingTemperature)
+        {
+            return;
+        }
+
+        if (double.TryParse(TemperatureTextBox.Text, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var temperature))
+        {
+            SetTemperatureControls(temperature);
+        }
+    }
+
     private async Task SaveWorkingSettingsAsync()
     {
         _workingSettings.ApiKey = ApiKeyBox.Password;
         _workingSettings.StartWithWindows = StartWithWindowsCheckBox.IsChecked == true;
         _workingSettings.SelectedModelId = (ModelComboBox.SelectedItem as OpenRouterModel)?.Id ?? _workingSettings.SelectedModelId;
+        _workingSettings.Temperature = ReadTemperature();
 
         var validation = SettingsService.Validate(_workingSettings);
         if (validation is not null)
@@ -269,6 +295,37 @@ public partial class SettingsWindow : Window
         TranslateHotkeyText.Text = _workingSettings.CorrectAndTranslateHotkey.ToDisplayString();
     }
 
+    private void SetTemperatureControls(double temperature)
+    {
+        var normalized = NormalizeTemperature(temperature);
+        _workingSettings.Temperature = normalized;
+
+        _isUpdatingTemperature = true;
+        TemperatureSlider.Value = normalized;
+        TemperatureTextBox.Text = normalized.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+        _isUpdatingTemperature = false;
+    }
+
+    private double ReadTemperature()
+    {
+        if (double.TryParse(TemperatureTextBox.Text, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var temperature))
+        {
+            return NormalizeTemperature(temperature);
+        }
+
+        return NormalizeTemperature(TemperatureSlider.Value);
+    }
+
+    private static double NormalizeTemperature(double temperature)
+    {
+        if (double.IsNaN(temperature))
+        {
+            return 0.5;
+        }
+
+        return Math.Clamp(Math.Round(temperature, 2), 0, 2);
+    }
+
     private void SetStatus(string status)
     {
         StatusText.Text = status;
@@ -280,6 +337,7 @@ public partial class SettingsWindow : Window
         {
             ApiKey = settings.ApiKey,
             SelectedModelId = settings.SelectedModelId,
+            Temperature = settings.Temperature,
             CorrectHotkey = new HotkeyBinding
             {
                 Kind = settings.CorrectHotkey.Kind,

@@ -38,7 +38,7 @@ public sealed class CorrectionCoordinator
         try
         {
             var settings = _settingsService.Current;
-            _logger?.Info("CorrectionStarted", $"mode={mode}; hasApiKey={!string.IsNullOrWhiteSpace(settings.ApiKey)}; model={settings.SelectedModelId ?? "<none>"}");
+            _logger?.Info("CorrectionStarted", $"mode={mode}; hasApiKey={!string.IsNullOrWhiteSpace(settings.ApiKey)}; model={settings.SelectedModelId ?? "<none>"}; temperature={settings.Temperature:0.##}");
 
             if (string.IsNullOrWhiteSpace(settings.ApiKey))
             {
@@ -59,7 +59,7 @@ public sealed class CorrectionCoordinator
 
             SetStatus(mode == CorrectionMode.Correct ? "Correcting selection..." : "Correcting and translating selection...");
             var changed = await _clipboardReplacementService.ReplaceSelectedTextAsync(
-                (text, token) => _openRouterClient.CorrectAsync(settings.ApiKey, settings.SelectedModelId, mode, text, token),
+                (text, token) => _openRouterClient.CorrectAsync(settings.ApiKey, settings.SelectedModelId, mode, text, settings.Temperature, token),
                 timeout.Token);
 
             _logger?.Info("CorrectionFinished", $"mode={mode}; changed={changed}");

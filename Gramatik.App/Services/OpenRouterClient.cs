@@ -58,12 +58,13 @@ public sealed class OpenRouterClient
         string modelId,
         CorrectionMode mode,
         string input,
+        double temperature,
         CancellationToken cancellationToken = default)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, "chat/completions");
         ApplyHeaders(request, apiKey);
-        request.Content = JsonContent.Create(CreateChatRequest(modelId, mode, input));
-        _logger?.Info("OpenRouterChatRequest", $"model={modelId}; mode={mode}; inputLength={input.Length}; providerSort=latency; reasoningEffort=none; reasoningExcluded=true");
+        request.Content = JsonContent.Create(CreateChatRequest(modelId, mode, input, temperature));
+        _logger?.Info("OpenRouterChatRequest", $"model={modelId}; mode={mode}; inputLength={input.Length}; temperature={temperature:0.##}; providerSort=latency; reasoningEffort=none; reasoningExcluded=true");
 
         using var response = await _httpClient.SendAsync(request, cancellationToken);
         _logger?.Info("OpenRouterChatResponse", $"status={(int)response.StatusCode} {response.StatusCode}");
@@ -78,12 +79,12 @@ public sealed class OpenRouterClient
         return trimmed;
     }
 
-    public static object CreateChatRequest(string modelId, CorrectionMode mode, string input)
+    public static object CreateChatRequest(string modelId, CorrectionMode mode, string input, double temperature = 0.5)
     {
         return new
         {
             model = modelId,
-            temperature = 0.2,
+            temperature = NormalizeTemperature(temperature),
             provider = new
             {
                 sort = "latency"
@@ -107,6 +108,16 @@ public sealed class OpenRouterClient
                 }
             }
         };
+    }
+
+    private static double NormalizeTemperature(double temperature)
+    {
+        if (double.IsNaN(temperature))
+        {
+            return 0.5;
+        }
+
+        return Math.Clamp(Math.Round(temperature, 2), 0, 2);
     }
 
     public static string GetSystemPrompt(CorrectionMode mode)

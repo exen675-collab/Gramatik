@@ -17,6 +17,7 @@ public sealed class SettingsServiceTests
         {
             ApiKey = "sk-or-secret",
             SelectedModelId = "openai/gpt-test",
+            Temperature = 0.7,
             CorrectHotkey = HotkeyBinding.Keyboard(Key.G, HotkeyModifier.Control),
             CorrectAndTranslateHotkey = HotkeyBinding.Mouse(MouseButtonName.XButton2)
         });
@@ -24,6 +25,7 @@ public sealed class SettingsServiceTests
         var json = await File.ReadAllTextAsync(path);
 
         Assert.DoesNotContain("sk-or-secret", json);
+        Assert.Contains("\"Temperature\": 0.7", json);
         Assert.Contains(Convert.ToBase64String("sk-or-secret".Reverse().Select(ch => (byte)ch).ToArray()), json);
     }
 
@@ -35,6 +37,19 @@ public sealed class SettingsServiceTests
         {
             CorrectHotkey = binding,
             CorrectAndTranslateHotkey = HotkeyBinding.Keyboard(Key.G, HotkeyModifier.Control | HotkeyModifier.Alt)
+        };
+
+        var error = SettingsService.Validate(settings);
+
+        Assert.NotNull(error);
+    }
+
+    [Fact]
+    public void Validate_RejectsTemperatureOutOfRange()
+    {
+        var settings = new RuntimeSettings
+        {
+            Temperature = 2.5
         };
 
         var error = SettingsService.Validate(settings);
